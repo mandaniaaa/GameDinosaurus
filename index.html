@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Dinosaurus</title>
+    <style>
+        body {
+            background-color: #a0d9de;
+            font-family: Arial Black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #gameCanvas {
+            background-color: #f5f5f5;
+            border: 2px solid #000;
+        }
+
+        .score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 36px;
+            color: red;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="800" height="200"></canvas>
+<div class="score">skor mu kangg: <span id="score">0</span></div>
+<div class="game-over" id="gameOver">gaiso main gausah main</div>
+
+<script>
+// Variabel untuk canvas dan context
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Variabel permainan
+let score = 0;
+let gameOver = false;
+let gravity = 0.5;
+let jumpStrength = -10;
+let dinoY = canvas.height - 60;
+let dinoX = 50;
+let dinoVelocityY = 0;
+let dinoWidth = 40;
+let dinoHeight = 60;
+let cactusWidth = 20;
+let cactusHeight = 40;
+let cactusX = canvas.width;
+let cactusSpeed = 6;
+
+// Menggambar dinosaurus
+function drawDino() {
+    // Kepala dinosaurus
+    ctx.fillStyle = 'pink';
+    ctx.fillRect(dinoX, dinoY - 20, 20, 20);  // Kepala dinosaurus
+
+    // Tubuh dinosaurus
+    ctx.fillRect(dinoX, dinoY, dinoWidth, dinoHeight);
+
+    // Kaki dinosaurus (sebuah persegi panjang untuk setiap kaki)
+    ctx.fillRect(dinoX + 10, dinoY + dinoHeight, 10, 20); // Kaki kiri
+    ctx.fillRect(dinoX + 20, dinoY + dinoHeight, 10, 20); // Kaki kanan
+}
+
+// Menggambar kaktus
+function drawCactus() {
+    ctx.fillStyle = 'black';
+
+    // Batang utama kaktus
+    ctx.fillRect(cactusX, canvas.height - cactusHeight, cactusWidth, cactusHeight);
+
+    // Batang samping kaktus (kaktus bisa memiliki cabang)
+    ctx.fillRect(cactusX - 10, canvas.height - cactusHeight - 20, 10, 20);  // Kaktus kiri
+    ctx.fillRect(cactusX + cactusWidth, canvas.height - cactusHeight - 20, 10, 20);  // Kaktus kanan
+}
+
+// Fungsi untuk melompat
+function jump() {
+    if (dinoY === canvas.height - dinoHeight) {
+        dinoVelocityY = jumpStrength;
+    }
+}
+
+// Menambah skor
+function increaseScore() {
+    score++;
+    document.getElementById('score').innerText = score;
+}
+
+// Fungsi untuk game over
+function gameOverFunc() {
+    gameOver = true;
+    document.getElementById('gameOver').style.display = 'block';
+}
+
+// Fungsi utama game loop
+function gameLoop() {
+    if (gameOver) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Melompat
+    dinoVelocityY += gravity;
+    dinoY += dinoVelocityY;
+
+    // Mencegah dinosaurus jatuh ke bawah canvas
+    if (dinoY > canvas.height - dinoHeight) {
+        dinoY = canvas.height - dinoHeight;
+        dinoVelocityY = 0;
+    }
+
+    // Menambahkan kaktus
+    cactusX -= cactusSpeed;
+    if (cactusX + cactusWidth < 0) {
+        cactusX = canvas.width;
+        cactusHeight = Math.random() * 50 + 30;  // Random ketinggian kaktus
+        increaseScore();
+    }
+
+    // Deteksi tabrakan antara dinosaurus dan kaktus
+    if (dinoX + dinoWidth > cactusX && dinoX < cactusX + cactusWidth && dinoY + dinoHeight > canvas.height - cactusHeight) {
+        gameOverFunc();
+    }
+
+    drawDino();
+    drawCactus();
+
+    requestAnimationFrame(gameLoop);
+}
+
+// Event listener untuk melompat
+document.addEventListener('keydown', function(event) {
+    if (event.keyCode === 32) { // 32 = spasi untuk melompat
+        jump();
+    }
+});
+
+// Mulai permainan
+gameLoop();
+</script>
+
+</body>
+</html>
